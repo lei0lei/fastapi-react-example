@@ -1,3 +1,5 @@
+"use client"
+
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -15,37 +17,15 @@ import {
 } from "@/components/ui/sidebar"
 
 import "./styles/global.css"
+import { useState } from 'react'
+import { useRouter } from "next/navigation"
+
 
 export default function Page() {
-  return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "300px",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar />
-      <SidebarInset>
-        <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">All Inboxes</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Inbox</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <p>Dashboard</p>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
-  )
+  return <div>Welcome to the App</div>;
+}
+
+export function History(){
+  return <div>init -12-15-2024</div>;
+
 }

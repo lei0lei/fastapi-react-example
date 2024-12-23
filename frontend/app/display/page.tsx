@@ -1,17 +1,17 @@
-"use client"
 
-import { Checkbox } from "@/components/ui/checkbox"
 
-export function CheckboxDemo() {
+export function DisplayPageSidebar(){
   return (
-    <div className="flex items-center space-x-2">
-      <Checkbox id="terms" />
-      <label
-        htmlFor="terms"
-        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
-        Accept terms and conditions
-      </label>
+
+    <div>
+      <p>Display</p>
     </div>
   )
 }
+
+
+
+
+export default function DisplayPage() {
+    return <div>这是 Display 页面内容</div>
+  }

@@ -22,16 +22,29 @@ import { Switch } from "@/components/ui/switch"
 import { useRouter } from 'next/router';
 import  { useEffect, useState } from 'react';
 
+
+import {DisplayPageSidebar} from "@/app/display/page"
+import {AlgorithmsPageSidebar} from "@/app/algorithms/page"
+import {FlowsPageSidebar} from "@/app/flows/page"
+import {HardwarePageSidebar} from "@/app/hardware/page"
+import {PluginsPageSidebar} from "@/app/plugins/page"
+import {ProjectPageSidebar} from "@/app/project/page"
+import {SettingsPageSidebar} from "@/app/settings/page"
+import {ToolsPageSidebar} from "@/app/tools/page"
+
+import {History} from "@/app/page"
+
+
 // This is sample data
-const data = {
+const sidebar_items = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "lei0lei",
+    email: "lei.lei.fan.meng@gmail.com",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
     {
-      title: "Show",
+      title: "Display",
       url: "#",
       icon: Tv,
       isActive: true,
@@ -42,58 +55,89 @@ const data = {
       url: "#",
       icon: FolderKanban,
       isActive: false,
-      link: "/",
+      link: "/project",
     },
     {
       title: "Settings",
       url: "#",
       icon: Settings,
       isActive: false,
-      link: "/",
+      link: "/settings",
     },
     {
       title: "Plugins",
       url: "#",
       icon: Blocks,
       isActive: false,
-      link: "/",
+      link: "/plugins",
     },
     {
       title: "Tools",
       url: "#",
       icon: Wrench,
       isActive: false,
-      link: "/",
+      link: "/tools",
     },
     {
-      title: "Workflow",
+      title: "Flows",
       url: "#",
       icon: Workflow,
       isActive: false,
-      link: "/",
+      link: "/flows",
     },
     {
       title: "Hardware",
       url: "#",
       icon: Cpu,
       isActive: false,
-      link: "/",
+      link: "/hardware",
     },
     {
-      title: "Algos",
+      title: "Algorithms",
       url: "#",
       icon: Box,
       isActive: false,
-      link: "/",
+      link: "/algorithms",
     },
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+
+
+interface AppSidebarProps {
+  onNavigate: (page: string, link: string) => void
+}
+
+export function AppSidebar({ onNavigate, ...props }: AppSidebarProps) {
   // Note: I'm using state to show active item.
   // IRL you should use the url/router.
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0])
+  const [activeItem, setActiveItem] = React.useState(sidebar_items.navMain[0])
   const { setOpen } = useSidebar()
+
+  const renderPageContent = () => {
+    switch (activeItem.title) {
+      case "Display":
+        return <DisplayPageSidebar />;
+      case "Algorithms":
+        return <AlgorithmsPageSidebar />;
+      case "Flows":
+        return <FlowsPageSidebar />;
+      case "Hardware":
+        return <HardwarePageSidebar />;
+      case "Plugins":
+        return <PluginsPageSidebar />;
+      case "Project":
+        return <ProjectPageSidebar />;
+      case "Settings":
+        return <SettingsPageSidebar />;
+      case "Tools":
+        return <ToolsPageSidebar />;
+      default:
+        return <History />;
+    }
+  };
+  
   // const [isClient, setIsClient] = useState(false);  // 用于标记是否在客户端
   // const router = useRouter(); // 获取 Next.js 的路由
   // 在组件加载后，标记客户端渲染完成
@@ -135,7 +179,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroup>
             <SidebarGroupContent className="px-1.5 md:px-0">
               <SidebarMenu>
-                {data.navMain.map((item) => (
+                {sidebar_items.navMain.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       tooltip={{
@@ -144,16 +188,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       }}
                       onClick={() => {
                         setActiveItem(item)
-                        // if (isClient) {
-                        //   router.push(item.link); // 跳转到相应的页面
-                        // }
-                        // const mail = data.mails.sort(() => Math.random() - 0.5)
-                        // setMails(
-                        //   mail.slice(
-                        //     0,
-                        //     Math.max(5, Math.floor(Math.random() * 10) + 1)
-                        //   )
-                        // )
+                        onNavigate(item.title, item.link) // 通知父组件
                         setOpen(true)
                       }}
                       isActive={activeItem.title === item.title}
@@ -169,7 +204,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          <NavUser user={data.user} />
+          <NavUser user={sidebar_items.user} />
         </SidebarFooter>
       </Sidebar>
 
@@ -181,33 +216,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="text-base font-medium text-foreground">
               {activeItem.title}
             </div>
-            <Label className="flex items-center gap-2 text-sm">
-              <span>Unreads</span>
-              <Switch className="shadow-none" />
-            </Label>
           </div>
-          <SidebarInput placeholder="Type to search..." />
         </SidebarHeader>
+
+
+
         <SidebarContent>
           <SidebarGroup className="px-0">
-            {/* <SidebarGroupContent>
-              {mails.map((mail) => (
-                <a
-                  href="#"
-                  key={mail.email}
-                  className="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                >
-                  <div className="flex w-full items-center gap-2">
-                    <span>{mail.name}</span>{" "}
-                    <span className="ml-auto text-xs">{mail.date}</span>
-                  </div>
-                  <span className="font-medium">{mail.subject}</span>
-                  <span className="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
-                    {mail.teaser}
-                  </span>
-                </a>
-              ))}
-            </SidebarGroupContent> */}
+            {renderPageContent()}
           </SidebarGroup>
         </SidebarContent>
       </Sidebar>
