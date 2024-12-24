@@ -34,7 +34,8 @@ inquirer = "^3.4.0"
 dependency-injector = "^4.44.0"
 cachetools = "^5.5.0"
 types-cachetools = "^5.5.0.20240820"
-
+supervision = "*"
+websockets = "^14.1"
 
 [[tool.poetry.source]]
 name = "tsinghua"

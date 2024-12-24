@@ -27,9 +27,35 @@ import ctypes
 from typing import Optional
 import importlib
 
+from fastapi import  WebSocket
+
+from fastapi.middleware.cors import CORSMiddleware
+from cameras.local_image.image_gen import router as image_get_websocket_router
+# 配置 CORS
+origins = [
+    "http://localhost:3000",  # 前端地址
+    "http://127.0.0.1:3000",  # 或者你的前端地址（如果是 React 本地开发的话）
+]
 
 app = FastAPI()
 
+app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # can alter with time
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+# from cameras.local_image.image_gen import get_images_from_folder
+
+app.include_router(image_get_websocket_router, prefix="/ws", tags=["WebSocket"])
+
+# @app.websocket("/ws")
+# async def websocket_endpoint(websocket: WebSocket):
+#     await websocket.accept()
+#     async for img_bytes in get_images_from_folder():
+#         await websocket.send_bytes(img_bytes)  # 向前端发送二进制数据
 
 @app.get("/")
 async def root():
@@ -187,3 +213,10 @@ async def list_registered_algos():
     查看已注册的算法列表
     """
     return {"registered_algorithms": list(router_dict.keys())}
+
+# @app.websocket("/ws")
+# async def websocket_endpoint(websocket: WebSocket):
+#     await websocket.accept()
+#     while True:
+#         data = await websocket.receive_text()
+#         await websocket.send_text(f"Message text was: {data}")
