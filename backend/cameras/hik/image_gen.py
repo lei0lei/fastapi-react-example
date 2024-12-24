@@ -22,7 +22,7 @@ async def get_images_from_folder():
         await asyncio.sleep(1)  # 每秒发送一张图片
 
 # WebSocket 路由
-@router.websocket("/get-folder-image")
+@router.websocket("/get-hik-image")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     async for img_bytes in get_images_from_folder():
