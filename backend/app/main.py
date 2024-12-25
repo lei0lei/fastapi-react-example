@@ -31,6 +31,7 @@ from fastapi import  WebSocket
 
 from fastapi.middleware.cors import CORSMiddleware
 from cameras.local_image.image_gen import router as image_get_websocket_router
+from cameras.hik.image_gen import router as image_hik_get_websocket_router
 # 配置 CORS
 origins = [
     "http://localhost:3000",  # 前端地址
@@ -50,7 +51,7 @@ app.add_middleware(
 # from cameras.local_image.image_gen import get_images_from_folder
 
 app.include_router(image_get_websocket_router, prefix="/ws", tags=["WebSocket"])
-
+app.include_router(image_hik_get_websocket_router, prefix="/ws", tags=["WebSocket"])
 # @app.websocket("/ws")
 # async def websocket_endpoint(websocket: WebSocket):
 #     await websocket.accept()

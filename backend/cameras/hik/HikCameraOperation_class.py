@@ -15,8 +15,8 @@ from memory_profiler import profile
 # sys.path.append("D:\\gitee\\hikvision-flet\\demo\\hik\\MvImport")
 import sys
 
-from .MvImport.CameraParams_header import *
-from .MvImport.MvCameraControl_class import *
+from cameras.hik.MvImport.CameraParams_header import *
+from cameras.hik.MvImport.MvCameraControl_class import *
 import sys
 import os 
 import ctypes
@@ -32,11 +32,11 @@ class deviceCam:
     ip: str
 
 
-# MvImport_path = 'D:\\gitee\\hikvision-flet\\demo\\hik\\MvImport'
+MvImport_path = 'D:\\MFL\\work\\xianxu\\fastapi-react-example\\backend\\cameras\\hik\\MvImport'
 
-# sys.path.append(MvImport_path)
+sys.path.append(MvImport_path)
 
-from .MvImport.MvErrorDefine_const import *
+from cameras.hik.MvImport.MvErrorDefine_const import *
 assert MvCamCtrldll is not None, f'please provide valid runtime dll path in {os.path.join(MvImport_path)}'
 
 def decoding_char(c_ubyte_value):
@@ -305,7 +305,7 @@ class CameraOperation:
                 
                 
                 # 将二进制的img_buff转换为numpy矩阵
-                numArray = Color_numpy(buf_cache, stOutFrame.stFrameInfo.nWidth, stOutFrame.stFrameInfo.nHeight)
+                numArray = Mono_numpy(buf_cache, stOutFrame.stFrameInfo.nWidth, stOutFrame.stFrameInfo.nHeight)
                 numArray_bgr = cv2.cvtColor(numArray, cv2.COLOR_RGB2BGR)
 
                 # 最后释放缓冲区

@@ -6,10 +6,10 @@ import ctypes
 
 from ctypes import *
 
-from PixelType_header import *
-from CameraParams_const import *
-from CameraParams_header import *
-from MvErrorDefine_const import *
+from cameras.hik.MvImport.PixelType_header import *
+from cameras.hik.MvImport.CameraParams_const import *
+from cameras.hik.MvImport.CameraParams_header import *
+from cameras.hik.MvImport.MvErrorDefine_const import *
 
 # Python3.8版本修改Dll加载策略, 默认不再搜索Path环境变量, 同时增加winmode参数以兼容旧版本
 # dllname = "MvCameraControl.dll"
@@ -17,7 +17,7 @@ from MvErrorDefine_const import *
 #     MvCamCtrldll = WinDLL(dllname, winmode=0)
 # else:
 #     MvCamCtrldll = WinDLL(dllname)
-MvCamCtrldll = WinDLL('D:\\gitee\\hikvision-flet\\demo\\hik\\Runtime\\Win64_x64\\MvCameraControl.dll')
+MvCamCtrldll = WinDLL('D:\\MFL\\work\\xianxu\\fastapi-react-example\\backend\\cameras\\hik\\Runtime\\Win64_x64\\MvCameraControl.dll')
 # 用于回调函数传入相机实例
 class _MV_PY_OBJECT_(Structure):
     pass
