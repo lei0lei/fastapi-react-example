@@ -5,7 +5,7 @@ const ImageDisplay = () => {
     const [imageSrc, setImageSrc] = useState<string | null>(null);
   
     // 设置 WebSocket 连接
-    useWebSocket('ws://localhost:8000/ws/get-hik-image', {
+    useWebSocket('ws://localhost:8000/ws/hik/get-cam-stream/0/no.0', {
       onMessage: (event) => {
         const blob = new Blob([event.data], { type: 'image/jpeg' });
         const url = URL.createObjectURL(blob);

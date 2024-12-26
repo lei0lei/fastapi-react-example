@@ -1,4 +1,4 @@
-import   ImageDisplay  from "@/components/image-display"
+import   ImageDisplay  from "@/components/stream-display"
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {Progress } from "@/components/ui/progress";
@@ -18,8 +18,7 @@ const StatusBadge = ({ status }: { status: 'OK' | 'NG' }) => {
   return (
     <Badge
       color={status === 'OK' ? 'green' : 'red'}
-      variant="solid"
-      size="lg"
+      variant="default"
       style={{ margin: '20px 0' }}
     >
       {status}

@@ -50,8 +50,8 @@ app.add_middleware(
 
 # from cameras.local_image.image_gen import get_images_from_folder
 
-app.include_router(image_get_websocket_router, prefix="/ws", tags=["WebSocket"])
-app.include_router(image_hik_get_websocket_router, prefix="/ws", tags=["WebSocket"])
+app.include_router(image_get_websocket_router, prefix="/ws/local", tags=["WebSocket","local",'stream'])
+app.include_router(image_hik_get_websocket_router, prefix="/ws/hik", tags=["WebSocket","hik",'stream'])
 # @app.websocket("/ws")
 # async def websocket_endpoint(websocket: WebSocket):
 #     await websocket.accept()
