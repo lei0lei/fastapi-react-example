@@ -76,7 +76,7 @@ def update_cams_status_on_detect(devList_dc):
                 online=True,  # 假设相机在线
                 grabing=False,  # 假设不在取流
                 grabing_count=0,  # 初始抓取次数为 0
-                frame_rate=1.0,  # 默认帧率为 1.0
+                frame_rate=0,  # 默认帧率为 0
                 status=False,  # 假设相机关闭
                 last_ping=datetime.now()  # 设置最后一次探测时间为当前时间
             )
@@ -139,7 +139,8 @@ async def open_device(deviceList=None, settings=None, nSelCamIndex=None):
         
     if not deviceList:
         raise Exception("未检测到相机设备")
-    
+    if obj_cams_operation is None:
+        obj_cams_operation = {}
     obj_cams_operation[nSelCamIndex] = CameraOperation(MvCamera(), deviceList, nSelCamIndex)
 
     ret = obj_cams_operation[nSelCamIndex].Open_device()
@@ -185,7 +186,7 @@ def update_cams_status_on_stream_once(nSelCamIndex,frame_rate):
     cams_status[nSelCamIndex].grabing_count+=1
     cams_status[nSelCamIndex].frame_rate+=frame_rate
     
-async def stream_frames(nSelCamIndex):
+async def stream_frames(nSelCamIndex=0):
     '''抓取相机帧
     '''
     global obj_cams_operation
@@ -222,21 +223,25 @@ router = APIRouter()
 async def get_camera_stream(websocket: WebSocket, nSelCamIndex: int, algo_registered: str):
     '''相机串流
     '''
-    global obj_cams_operation
+    global obj_cams_operation,cams_status
+    if obj_cams_operation is None:
+        obj_cams_operation ={}
+    devList, devList_dc, deviceList = detect_camera()
+    print(cams_status)
     await websocket.accept()
-    if nSelCamIndex not in obj_cams_operation:
+    if nSelCamIndex not in cams_status:
         assert 'No camera opened'
         
     try:
-        if nSelCamIndex in obj_cams_operation:
+        if nSelCamIndex not in obj_cams_operation:
             # 检测相机
-            await open_device(nSelCamIndex)
-        await cam_start_grabbing(nSelCamIndex)
+            await open_device(deviceList, None, nSelCamIndex)
+        await cam_start_grabbing(None, None, nSelCamIndex)
         
         
         async for img_bytes in stream_frames(nSelCamIndex):
             result_img_bytes = await detect_and_draw_async(img_bytes)
-            await websocket.send_bytes(img_bytes)
+            await websocket.send_bytes(result_img_bytes)
     except Exception as e:
         print(f"WebSocket 错误: {e}")
 
@@ -496,5 +501,12 @@ async def get_camera_hardware_info(camera_id: str):
 
 if __name__ == '__main__':
     a,b,c = detect_camera()
+    print(cams_status)
+    open_device(c,None,0)
+    print(cams_status)
+    cam_start_grabbing(None,None,0)
+    print(cams_status)
+    close_device(0)
+    print(cams_status)
     # grab_once()
-    open_device()
+    # open_device()
