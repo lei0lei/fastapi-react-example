@@ -3,17 +3,20 @@ import base64
 import os
 
 from fastapi import APIRouter, WebSocket, HTTPException
+from starlette.websockets import  WebSocketDisconnect, WebSocketState
+
 from algorithms.yolov8.detect.xianxu_detect import detect_and_draw_async  # 导入目标检测函数
 from pydantic import BaseModel
 from typing import Optional
 from fastapi.responses import StreamingResponse
+from fastapi.responses import Response
 from ctypes import *
 import io
 import sys
 from typing import List, Tuple,Dict
 import re
 sys.path.append('D:\\MFL\\work\\xianxu\\fastapi-react-example\\backend\\cameras\\hik\\MvImport')
-
+import uuid
 from cameras.hik.MvImport.MvCameraControl_class import *
 from cameras.hik.MvImport.MvCameraControl_class import *
 from cameras.hik.MvImport.MvErrorDefine_const import *
@@ -35,6 +38,7 @@ class CameraStatus(BaseModel):
     grabing_count: int = 0
     frame_rate: float = 0
     status: bool  = False# True 表示相机打开，False 表示关闭
+    registered: bool = False
     last_ping: datetime  # 最后一次在线检查时间
     
     
@@ -78,6 +82,7 @@ def update_cams_status_on_detect(devList_dc):
                 grabing_count=0,  # 初始抓取次数为 0
                 frame_rate=0,  # 默认帧率为 0
                 status=False,  # 假设相机关闭
+                registered=False,
                 last_ping=datetime.now()  # 设置最后一次探测时间为当前时间
             )
             
@@ -112,7 +117,8 @@ async def close_device(nSelCamIndex=None):
     if obj_cams_operation:
         obj_cams_operation[nSelCamIndex].Stop_grabbing()
         obj_cams_operation[nSelCamIndex].Close_device()
-        
+    
+    # obj_cams_operation[nSelCamIndex]=None
     update_cams_status_on_close(nSelCamIndex)
 
 
@@ -185,6 +191,7 @@ def update_cams_status_on_stream_once(nSelCamIndex,frame_rate):
     global cams_status
     cams_status[nSelCamIndex].grabing_count+=1
     cams_status[nSelCamIndex].frame_rate+=frame_rate
+    cams_status[nSelCamIndex].last_ping=datetime.now()
     
 async def stream_frames(nSelCamIndex=0):
     '''抓取相机帧
@@ -216,8 +223,25 @@ async def stream_frames(nSelCamIndex=0):
         # yield frame_data
         await asyncio.sleep(0.01)
 
-router = APIRouter()
+def update_cams_status_on_grab_once(nSelCamIndex):
+    global cams_status
+    cams_status[nSelCamIndex].last_ping=datetime.now()
 
+async def image_frame(nSelCamIndex=0):
+    global obj_cams_operation
+    if nSelCamIndex not in obj_cams_operation:
+        raise Exception("相机未打开")
+    last_time = None  # 初始化时间
+
+    frame_data = obj_cams_operation[nSelCamIndex].grab_frame()
+    update_cams_status_on_grab_once(nSelCamIndex)
+    frame_data = cv2.resize(frame_data,(int(w/3),int(h/3)))
+    success, jpg_img = cv2.imencode('.jpg', frame_data)
+    return jpg_img.tobytes()
+
+
+router = APIRouter()
+import json
 # WebSocket 路由
 @router.websocket("/get-camera-stream/{nSelCamIndex}/{algo_registered}")
 async def get_camera_stream(websocket: WebSocket, nSelCamIndex: int, algo_registered: str):
@@ -227,21 +251,42 @@ async def get_camera_stream(websocket: WebSocket, nSelCamIndex: int, algo_regist
     if obj_cams_operation is None:
         obj_cams_operation ={}
     devList, devList_dc, deviceList = detect_camera()
-    print(cams_status)
+    
     await websocket.accept()
     if nSelCamIndex not in cams_status:
         assert 'No camera opened'
         
+    frame_queue = asyncio.Queue()  # 用于存储帧数据
+
     try:
         if nSelCamIndex not in obj_cams_operation:
             # 检测相机
             await open_device(deviceList, None, nSelCamIndex)
         await cam_start_grabbing(None, None, nSelCamIndex)
-        
-        
+
         async for img_bytes in stream_frames(nSelCamIndex):
-            result_img_bytes = await detect_and_draw_async(img_bytes)
-            await websocket.send_bytes(result_img_bytes)
+            frame_id = str(uuid.uuid4())
+
+            result = await detect_and_draw_async(img_bytes)
+            result_img_bytes,detect_results = result['image_bytes'],result['detection_results']
+
+            detect_results['frame_id'] = frame_id
+            try:
+                if websocket.client_state == WebSocketState.CONNECTED:
+                    await websocket.send_text(json.dumps(detect_results))
+                    # 检测结果发送，包含目标检测结果，OK,NG,统计数量
+
+                    # 发送图片数据（二进制），附加帧 ID 到头部
+                    frame_id_bytes = frame_id.encode("utf-8")
+                    frame_id_length = len(frame_id_bytes).to_bytes(4, byteorder="big")  # 用 4 字节记录 ID 长度
+                    await websocket.send_bytes(frame_id_length + frame_id_bytes + result_img_bytes)
+                    # await websocket.send_bytes(result_img_bytes['image_bytes'])
+
+            except RuntimeError as e:
+                print(f"WebSocket 错误: {e}")
+                break  # 如果遇到错误，退出循环
+    except WebSocketDisconnect:
+        print("客户端已断开连接")
     except Exception as e:
         print(f"WebSocket 错误: {e}")
 
@@ -255,24 +300,31 @@ async def get_camera_image(nSelCamIndex: int):
     """
     获取当前相机的图片
     """
-    # 模拟打开相机并捕获图片
-    camera = cv2.VideoCapture(0)  # 0 表示默认相机
-    if not camera.isOpened():
-        raise HTTPException(status_code=500, detail="Camera could not be opened")
-    
-    # 读取帧
-    ret, frame = camera.read()
-    camera.release()
-    
-    if not ret:
-        raise HTTPException(status_code=500, detail="Failed to capture image from camera")
-    
-    # 将帧编码为 JPEG 格式
-    _, buffer = cv2.imencode(".jpg", frame)
-    image_bytes = io.BytesIO(buffer)
+    global obj_cams_operation,cams_status
+    if obj_cams_operation is None:
+        obj_cams_operation ={}
+    devList, devList_dc, deviceList = detect_camera()
 
-    # 返回图片数据流
-    return StreamingResponse(image_bytes, media_type="image/jpeg")
+    if nSelCamIndex not in cams_status:
+        assert 'No camera opened'
+        
+    try:
+        
+        if nSelCamIndex not in obj_cams_operation:
+            # 检测相机
+            await open_device(deviceList, None, nSelCamIndex)
+
+        # if cams_status[nSelCamIndex].status is False:
+        #     await open_device(deviceList, None, nSelCamIndex)
+
+        await cam_start_grabbing(None, None, nSelCamIndex)
+        # 调用 image_frame 获取单帧图片数据
+        frame_data = await image_frame(nSelCamIndex)
+        # 返回图片的二进制数据，设置响应头为 image/jpeg
+        return Response(content=frame_data, media_type="image/jpeg")
+    except Exception as e:
+        # 捕获并返回错误
+        raise HTTPException(status_code=400, detail=str(e))
 
 # ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ====
 # 模拟相机状态和参数
@@ -292,9 +344,10 @@ camera_params = {
 # 请求模型
 class CameraRegistration(BaseModel):
     ip: str
-    port: Optional[int] = 80
-    username: Optional[str] = "admin"
-    password: Optional[str] = "admin"
+    index: int
+    protocol: str
+    algorithm: List[str]
+
 
 
 # 设置相机参数的模型

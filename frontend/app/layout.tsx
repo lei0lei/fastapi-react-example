@@ -50,7 +50,16 @@ export default function RootLayout({
       case "Page":
         return <Page />;
       case "Display":
-        return <DisplayPage />;
+        // return (
+        //   <div className="flex flex-col flex-1">
+        //     {/* Display 页面没有二级侧边栏 */}
+        //     <DisplayPage />
+        //   </div>
+        // );
+        return (
+          <div>
+          </div>
+        )
       case "Algorithms":
         return <AlgorithmsPage />;
       case "Flows":
@@ -66,7 +75,13 @@ export default function RootLayout({
       case "Tools":
         return <ToolsPage />;
       default:
-        return <div>Page not found</div>;
+        return (
+          <div className="flex flex-1">
+            {/* 包含二级侧边栏的其他页面 */}
+            <AppSidebar onNavigate={handleNavigate} />
+            {renderPageContent()}
+          </div>
+        );
     }
   };
 
