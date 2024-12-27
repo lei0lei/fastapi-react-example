@@ -36,6 +36,8 @@ cachetools = "^5.5.0"
 types-cachetools = "^5.5.0.20240820"
 supervision = "*"
 websockets = "^14.1"
+tinydb = "^4.8.2"
+python-dotenv = "^1.0.1"
 
 [[tool.poetry.source]]
 name = "tsinghua"
