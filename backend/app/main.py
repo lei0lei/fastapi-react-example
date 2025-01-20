@@ -34,8 +34,8 @@ from cameras.local_image.image_gen import router as image_get_websocket_router
 from cameras.hik.image_gen import router as image_hik_get_websocket_router
 # 配置 CORS
 origins = [
-    "http://localhost:3000",  # 前端地址
-    "http://127.0.0.1:3000",  # 或者你的前端地址（如果是 React 本地开发的话）
+    "http://localhost:5173",  # 前端地址
+    "http://127.0.0.1:5173",  # 或者你的前端地址（如果是 React 本地开发的话）
 ]
 
 app = FastAPI()

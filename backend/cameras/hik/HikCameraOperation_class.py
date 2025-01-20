@@ -32,7 +32,7 @@ class deviceCam:
     ip: str
 
 
-MvImport_path = 'D:\\MFL\\work\\xianxu\\fastapi-react-example\\backend\\cameras\\hik\\MvImport'
+MvImport_path = 'D:\\github\\fastapi-react-example\\backend\\cameras\\hik\\MvImport'
 
 sys.path.append(MvImport_path)
 

@@ -17,7 +17,7 @@ from cameras.hik.MvImport.MvErrorDefine_const import *
 #     MvCamCtrldll = WinDLL(dllname, winmode=0)
 # else:
 #     MvCamCtrldll = WinDLL(dllname)
-MvCamCtrldll = WinDLL('D:\\MFL\\work\\xianxu\\fastapi-react-example\\backend\\cameras\\hik\\Runtime\\Win64_x64\\MvCameraControl.dll')
+MvCamCtrldll = WinDLL('D:\\github\\fastapi-react-example\\backend\\cameras\\hik\\Runtime\\Win64_x64\\MvCameraControl.dll')
 # 用于回调函数传入相机实例
 class _MV_PY_OBJECT_(Structure):
     pass

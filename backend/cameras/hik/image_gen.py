@@ -15,7 +15,7 @@ import io
 import sys
 from typing import List, Tuple,Dict
 import re
-sys.path.append('D:\\MFL\\work\\xianxu\\fastapi-react-example\\backend\\cameras\\hik\\MvImport')
+sys.path.append('D:\\github\\fastapi-react-example\\backend\\cameras\\hik\\MvImport')
 import uuid
 from cameras.hik.MvImport.MvCameraControl_class import *
 from cameras.hik.MvImport.MvCameraControl_class import *
